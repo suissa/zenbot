@@ -1,24 +1,23 @@
-var colors = require('colors')
-  , n = require('numbro')
-  , o = require('object-get')
+const colors = require( 'colors' )
+const n = require( 'numbro' )
+const o = require( 'object-get' )
 
-module.exports = function container (get, set, clear) {
-  var apply_funcs = get('utils.apply_funcs')
-  return function reporter (tick, rs, cb) {
-    var c = get('config')
-    var reporter_cols = c.reporter_cols.map(function (i) {
-      return get('reporter_cols.' + i)
-    })
-    if (c.reporter_sizes.indexOf(tick.size) === -1 || !tick.data.trades) return cb()
-    var g = {
-      tick: tick,
-      cols: [],
-      rs: rs
-    }
-    apply_funcs(g, reporter_cols, function (err, g) {
-      if (err) return cb(err)
-      get('logger').info('reporter', g.cols.join(' '))
-      cb()
-    })
+module.exports = ( get, set, clear ) =>
+  ( tick, rs, cb ) => {
+
+    const c = get( 'config' )
+    const cols = []
+    const g = { tick, rs, cols }
+
+    if ( c.reporter_sizes.indexOf( tick.size ) === -1 || 
+        !tick.data.trades ) return cb()
+
+    const mapCols = ( i ) => get( 'reporter_cols.' + i )
+    const reporter_cols = c.reporter_cols.map( mapCols )
+
+    apply_funcs( g, reporter_cols, ( err, g ) => 
+      ( err )
+        ? cb( err )
+        : get( 'logger' ).info( 'reporter', g.cols.join(' ')) && cb()
+    )
   }
-}
